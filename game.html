@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MTK & English Quiz Game</title>
+  <style>
+    :root {
+      --primary:#007bff;
+      --bg:#f2f2f2;
+      --text:#222;
+      --card:#ffffff;
+    }
+
+    /* RESET */
+    * { margin:0; padding:0; box-sizing:border-box; font-family: Poppins, Arial, sans-serif; }
+
+    body { background: var(--bg); }
+
+    /* NAVBAR */
+    .navbar {
+      width: 100%;
+      background: #ffffff;
+      padding: 20px 60px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 999;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .logo { font-size: 32px; font-weight: 700; color:#000; }
+    .nav-links a {
+      text-decoration: none;
+      margin-left: 35px;
+      color:#000;
+      font-size: 17px;
+      font-weight: 500;
+      transition: 0.2s;
+    }
+    .nav-links a:hover { color: #D4AF37; }
+
+    /* MAIN CONTENT */
+    main { padding-top: 120px; display:flex; justify-content:center; align-items:center; min-height:100vh; }
+
+    /* GAME BOX */
+    .game-box { background:var(--card); padding:35px; border-radius:16px; width:380px; text-align:center; box-shadow:0 8px 18px rgba(0,0,0,0.18); animation:pop .4s ease; }
+    @keyframes pop { from{opacity:0; transform:scale(.8);} to{opacity:1; transform:scale(1);} }
+    h2 { margin-bottom:10px; color:var(--primary); letter-spacing:1px; }
+
+    button { padding:12px 22px; border:none; background:var(--primary); color:rgb(255, 255, 255); font-size:17px; border-radius:10px; cursor:pointer; margin-top:20px; font-weight:600; transition:.3s; }
+    button:hover { transform:scale(1.05); box-shadow:0 4px 12px rgba(0,0,0,.2); }
+
+    .shake { animation: shake 0.35s; }
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      50% { transform: translateX(6px); }
+      75% { transform: translateX(-6px); }
+      100% { transform: translateX(0); }
+    }
+
+    .hide { display:none; }
+
+    input { padding:12px; width:85%; margin-top:15px; border:2px solid #ddd; border-radius:10px; font-size:16px; transition:.3s; }
+    input:focus { border-color:var(--primary); outline:none; box-shadow:0 0 6px rgba(0,123,255,.4); }
+
+    #score { font-size:18px; margin-top:16px; font-weight:600; color:var(--primary); }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <header class="navbar">
+    <h2 class="logo">Welcome</h2>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="projects.html">Projects</a>
+      <a href="skills.html">Skills</a>
+      <a href="game.html">Game</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+  </header>
+
+  <!-- MAIN GAME CONTENT -->
+  <main>
+    <div class="game-box">
+      <h2>🎮 MTK & English Quiz</h2>
+      <p id="question">Klik Mulai untuk bermain!</p>
+      <input id="answer" class="hide" placeholder="Jawaban kamu...">
+      <button id="start">Mulai Game</button>
+      <p id="score"></p>
+    </div>
+  </main>
+
+  <!-- CONFETTI -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <!-- GAME SCRIPT -->
+  <script>
+    const math = [
+      { q: "5 + 7 = ?", a: "12" },
+      { q: "15 - 9 = ?", a: "6" },
+      { q: "8 x 4 = ?", a: "32" },
+      { q: "20 : 5 = ?", a: "4" }
+    ];
+
+    const english = [
+      { q: "Translate: Cat", a: "kucing" },
+      { q: "Translate: School", a: "sekolah" },
+      { q: "Translate: Water", a: "air" },
+      { q: "Translate: Blue", a: "biru" }
+    ];
+
+    let questions = [];
+    let index = 0, skor = 0, timer = 15, interval;
+
+    const q = document.getElementById("question");
+    const ans = document.getElementById("answer");
+    const btn = document.getElementById("start");
+    const scoreTX = document.getElementById("score");
+    const box = document.querySelector(".game-box");
+
+    const audioCorrect = new Audio("correct.mp3");
+    const audioWrong = new Audio("wrong.mp3");
+
+    function startTimer() {
+      interval = setInterval(() => {
+        timer--;
+        scoreTX.textContent = `⏳ ${timer}s`;
+        if (timer <= 0) nextQuestion();
+      }, 1000);
+    }
+
+    function startGame(mode) {
+      questions =(mode === "math" ? math : english).sort(() => Math.random() - 0.5);
+      index = 0; skor = 0; timer = 15;
+      q.textContent = questions[index].q;
+      ans.classList.remove("hide");
+      btn.textContent = "Jawab";
+      startTimer();
+    }
+
+    function nextQuestion(){
+      if (ans.value.toLowerCase() === questions[index].a) {
+        skor++;
+        audioCorrect.play();
+      } else {
+        box.classList.add("shake");
+        audioWrong.play();
+        setTimeout(() => box.classList.remove("shake"), 350);
+      }
+
+      index++; timer = 15;
+
+      if (index < questions.length) {
+        q.textContent = questions[index].q;
+        ans.value = "";
+      } else {
+        clearInterval(interval);
+        q.textContent = "Game Selesai! 🎉";
+        scoreTX.textContent = `Skor: ${skor}/${questions.length}`;
+        ans.classList.add("hide");
+        btn.classList.add("hide");
+        confetti({ particleCount: 200, spread: 80, origin:{ y:0.6 }});
+      }
+    }
+
+    btn.addEventListener("click", () => {
+      if (btn.textContent === "Mulai Math") return startGame("math");
+      if (btn.textContent === "Mulai English") return startGame("english");
+      nextQuestion();
+    });
+
+    // Tambahkan tombol Math & English
+    btn.textContent = "Mulai Math";
+    const btn2 = document.createElement("button");
+    btn2.textContent = "Mulai English";
+    box.appendChild(btn2);
+    btn2.onclick = () => startGame("english");
+  </script>
+
+</body>
+</html>
